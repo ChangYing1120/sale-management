@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block page-title %}Maintenance Call{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="main-screen">
+        <!-- Page 1 - Create Maintenance Call -->
+        <div id="page1" class="page-section" style="display: block;">
+            <div class="main-title">
+                <h2>Maintenance Call 1/3</h2>
+            </div>
+            <div class="card p-4 shadow">
+                <form id="create-maintenance-call-form" novalidate>
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="project" class="form-label">Project</label>
+                            <select class="form-select" id="project" name="project" required>
+                                <option value="">Select Project</option>
+                                {% for project in projects %}
+                                    <option value="{{ project.id }}">{{ project.project_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please select a project.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="product" class="form-label">Product</label>
+                            <select class="form-select" id="product" name="product" required>
+                                <option value="">Select Product</option>
+                                {% for product in products %}
+                                    <option value="{{ product.id }}">{{ product.product_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please select a product.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="techLead" class="form-label">Technical Lead</label>
+                            <select class="form-select" id="techLead" name="techLead" required>
+                                <option value="">Select Technical Lead</option>
+                                {% for techlead in techleads %}
+                                    <option value="{{ techlead.id }}">{{ techlead.first_name }} {{ techlead.last_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="problem_description" class="form-label">Problem Description</label>
+                            <textarea class="form-control" id="problem_description" name="problem_description" rows="4" required></textarea>
+                            <div class="invalid-feedback">Please provide a problem description.</div>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" id="next-to-page2" class="btn btn-orange w-25">Next</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Page 2 - Add Additional Information -->
+        <div id="page2" class="page-section" style="display: none;">
+            <div class="main-title">
+                <h2>Maintenance Call 2/3</h2>
+            </div>
+            <div class="card p-4 shadow">
+                <form id="update-maintenance-call-form" novalidate>
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="is_problem" class="form-label">Is it a problem?</label>
+                            <input type="checkbox" id="is_problem" name="is_problem">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="problem_description_page2" class="form-label">Problem Description</label>
+                            <textarea class="form-control" id="problem_description_page2" name="problem_description" rows="4" required></textarea>
+                            <div class="invalid-feedback">Please update the problem description.</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Problem Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Product error">Product error</option>
+                                <option value="App error">App error</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a problem category.</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="solution_description" class="form-label">Solution Description</label>
+                            <textarea class="form-control" id="solution_description" name="solution_description" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="pending">Pending</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="done">Done</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a status.</div>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" id="submit-maintenance-call" class="btn btn-orange w-25">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Page 3 - Maintenance Call List with Chart -->
+        <div id="page3" class="page-section" style="display: none;">
+            <div class="main-title">
+                <h2>Maintenance Call 3/3</h2>
+            </div>
+            <div class="card p-4 shadow">
+                <table id="maintenance-call-table" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Project Name</th>
+                            <th>Call Number</th>
+                            <th>Problem Description</th>
+                            <th>Category</th>
+                            <th>Tech Lead</th>
+                            <th>Solution Description</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="call-list">
+                        {% for call in maintenance_calls %}
+                        <tr>
+                            <td>{{ call.project.project_name }}</td>
+                            <td>{{ call.id }}</td>
+                            <td>{{ call.description }}</td>
+                            <td>{{ call.category }}</td>
+                            <td>{{ call.tech_lead }}</td>
+                            <td>{{ call.solution_description }}</td>
+                            <td>
+                                {% if call.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif call.status == 'in_progress' %}
+                                    <span class="badge bg-info">In Progress</span>
+                                {% elif call.status == 'done' %}
+                                    <span class="badge bg-success">Done</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card p-4 shadow mt-4 d-flex justify-content-center align-items-center">
+                <div class="chart-container" style="width: 50%; max-width: 400px;">
+                    <canvas id="status-distribution-chart"></canvas>
+                </div>
+            </div>
+            <div class="text-end mt-4">
+                <button type="button" id="finish-call" class="btn btn-success w-25">Finish</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery Section -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    var chart;  // Declare chart variable to update it dynamically
+
+    function initializeChart(chartData) {
+        var ctx = document.getElementById('status-distribution-chart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Maintenance Status',
+                    data: chartData.data,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                }]
+            },
+        });
+    }
+
+    $(document).ready(function() {
+        // Function to handle form validation
+        function validateForm(formId) {
+            var form = $(formId);
+            if (form[0].checkValidity() === false) {
+                form.addClass('was-validated');
+                return false;
+            }
+            return true;
+        }
+
+        // When "Is it a problem?" checkbox is changed, adjust the status
+        $('#is_problem').change(function() {
+            if (!$(this).is(':checked')) {
+                $('#status').val('done'); // If unchecked, change status to "Done"
+            } else {
+                $('#status').val('pending'); // If checked, change status to "Pending" or allow user choice
+            }
+        });
+
+        // When the status dropdown changes, adjust the checkbox accordingly
+        $('#status').change(function() {
+            var selectedStatus = $(this).val();
+            if (selectedStatus === 'done') {
+                $('#is_problem').prop('checked', false); // If status is "Done", uncheck the "Is it a problem?" checkbox
+            } else {
+                $('#is_problem').prop('checked', true); // For other statuses, check the checkbox
+            }
+        });
+
+        // Page 1: Proceed to the next step with validation
+        $('#next-to-page2').click(function() {
+            if (!validateForm('#create-maintenance-call-form')) return;
+
+            // Hide Page 1 and show Page 2
+            $('#page1').hide();
+            $('#page2').show();
+
+            // Load data into Page 2
+            var problem_description = $('#problem_description').val();
+            $('#problem_description_page2').val(problem_description);
+        });
+
+        // Page 2: Submit and handle data with AJAX
+        $('#submit-maintenance-call').click(function() {
+            if (!validateForm('#update-maintenance-call-form')) return;
+
+            // AJAX call to submit data
+            var data = {
+                'project': $('#project').val(),
+                'product': $('#product').val(),
+                'techLead': $('#techLead').val(),
+                'problem_description': $('#problem_description_page2').val(),
+                'is_problem': $('#is_problem').is(':checked'),
+                'category': $('#category').val(),
+                'solution_description': $('#solution_description').val(),
+                'status': $('#status').val(),
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "{% url 'ajax_create_service_call' %}",
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        // Update the table with the new data without reloading the page
+                        var newRow = `
+                            <tr>
+                                <td>${response.project_name}</td>
+                                <td>${response.call_number}</td>
+                                <td>${response.description}</td>
+                                <td>${response.category}</td>
+                                <td>${response.tech_lead}</td>
+                                <td>${response.solution_description}</td>
+                                <td>
+                                    <span class="badge ${getStatusBadge(response.status)}">${response.status}</span>
+                                </td>
+                            </tr>`;
+                        $('#call-list').append(newRow);
+
+                        // Hide Page 2 and show Page 3
+                        $('#page2').hide();
+                        $('#page3').show();
+
+                        // Initialize DataTable
+                        $('#maintenance-call-table').DataTable();
+
+                        // Update the chart with the new data
+                        chart.data.datasets[0].data = response.chart_data.data;  // Update chart data
+                        chart.update();
+                    } else {
+                        alert('Error occurred while submitting data.');
+                    }
+                }
+            });
+        });
+
+        // Function to return badge class based on status
+        function getStatusBadge(status) {
+            if (status === 'pending') return 'bg-warning text-dark';
+            if (status === 'in_progress') return 'bg-info';
+            if (status === 'done') return 'bg-success';
+            return '';
+        }
+
+        // Initialize the chart with existing data when the page is first loaded
+        initializeChart({{ chart_data|safe }});
+
+        // Finish call
+        $('#finish-call').click(function() {
+            alert("Maintenance call finished.");
+            window.location.href = "/maintenance-call";
+        });
+    });
+</script>
+{% endblock %}

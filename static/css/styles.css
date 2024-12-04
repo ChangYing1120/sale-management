@@ -1,0 +1,192 @@
+body {
+    direction: rtl;
+}
+/* Sidebar styling */
+.right-sidebar {
+    position: fixed;
+    top: 0;
+    height: 100%;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+}
+
+.right-sidebar img {
+    width: 100px;
+    margin-bottom: 40px;
+}
+
+.sidebar-button {
+    width: 100%;
+    margin: 10px 0;
+    padding: 15px;
+    background-color: #004d66;
+    color: white;
+    border: none;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-button:hover {
+    background-color: #00384d;
+}
+
+.main-content {
+    margin-right: 270px; /* Adjust according to sidebar width */
+    padding: 20px;
+}
+
+.sidebar-button:focus {
+    outline: none;
+}
+
+.main-screen {
+    margin-top: 20px;
+}
+
+.main-title {
+    border: 2px solid rgb(255 131 0);
+    padding: 10px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.project-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 19px;
+    background-color: rgb(255, 131, 0); /* Default button color */
+    border-radius: 8px;
+    color: #000;
+    width: 80%;
+    font-size: 20px;
+    font-weight: 600;
+    border: 2px solid;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+}
+
+/* Hover State */
+.project-btn:hover {
+    background-color: rgb(255, 102, 0); /* Slightly darker orange */
+    color: white; /* Change text color on hover */
+}
+
+/* Active State (when clicked) */
+.project-btn:active {
+    background-color: rgb(204, 81, 0); /* Darker orange for the active state */
+    color: white; /* Maintain white text */
+    border-color: rgb(204, 81, 0); /* Match border color with the button */
+}
+
+
+.btn-main {
+    margin: 15px;
+    padding: 20px;
+}
+.form-section {
+    display: none;
+    margin: 20px auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+.project-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+h2 {
+    text-align: center;
+    color: #000;
+    font-weight: 700;
+}
+
+.btn-custom {
+    background-color: #004d66;
+    color: white;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 5px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.btn-custom:hover {
+    background-color: #00384d;
+    color: white;
+}
+.card {
+    padding: 30px;
+    border-radius: 10px;
+}
+
+.form-control:focus,
+.form-control:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 1px solid #00384d;
+}
+
+.form-select:focus,
+.form-select:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 1px solid #00384d;
+}
+
+a {
+    text-decoration: none!important;
+}
+
+.order-form-section {
+    margin: 20px auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.btn-orange {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: rgb(255, 131, 0); /* Main button background color */
+    --bs-btn-border-color: rgb(255, 131, 0); /* Main button border color */
+
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: rgba(255, 131, 0, 0.85); /* Slightly darker orange for hover */
+    --bs-btn-hover-border-color: rgba(255, 131, 0, 0.75); /* Darker border for hover */
+
+    --bs-btn-focus-shadow-rgb: 255, 131, 0; /* Orange shadow for focus */
+
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: rgba(255, 131, 0, 0.75); /* Even darker for active state */
+    --bs-btn-active-border-color: rgba(255, 131, 0, 0.65); /* Darker border for active state */
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: rgba(255, 131, 0, 0.65); /* Disabled state color */
+    --bs-btn-disabled-border-color: rgba(255, 131, 0, 0.65); /* Disabled border color */
+}
+
+/* Hover state */
+.btn-orange:hover {
+    background-color: rgba(255, 131, 0, 0.85); /* Darker orange on hover */
+    border-color: rgba(255, 131, 0, 0.75); /* Darker border on hover */
+}
+
+/* Active state */
+.btn-orange:active {
+    background-color: rgba(255, 131, 0, 0.75); /* Even darker orange when active */
+    border-color: rgba(255, 131, 0, 0.65); /* Darker border when active */
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); /* Inner shadow for pressed effect */
+}

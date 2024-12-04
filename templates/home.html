@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block page-title %}Home{% endblock %}
+{% block content %}
+
+<div class="container">
+    <!-- Main Screen -->
+    <div class="main-screen">
+        <div class="main-title">
+            <h2>Main Screen</h2>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-6 d-flex justify-content-center">
+                <div class="project-btn" id="createProjectBtn">
+                    Create New Project
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="project-btn" id="existingProjectsBtn">
+                    Existing Project
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form to Create/Update Project -->
+    <div class="form-section card" id="projectFormSection" style="display:none;">
+        <h2 id="formTitle">Create New Project</h2>
+        <form id="projectForm" class="needs-validation" autocomplete="off" novalidate>
+            {% csrf_token %}
+            <input type="hidden" id="project_id" name="project_id" />  <!-- Hidden field to hold project ID for updates -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="projectName" class="form-label">Project Name</label>
+                    <input type="text" class="form-control" id="projectName" name="projectName" required />
+                </div>
+                <div class="col-md-6">
+                    <label for="customer" class="form-label">Customer</label>
+                    <select class="form-select" id="customer" name="customer" required>
+                        <option value="">Select Customer</option>
+                        {% for customer in customers %}
+                            <option value="{{ customer.id }}">{{ customer.company_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="workSite" class="form-label">Work Site</label>
+                    <input type="text" class="form-control" id="workSite" name="workSite" required />
+                </div>
+                <div class="col-md-6">
+                    <label for="salesman" class="form-label">Salesman</label>
+                    <select class="form-select" id="salesman" name="salesman" required>
+                        <option value="">Select Salesman</option>
+                        {% for salesman in salesmen %}
+                            <option value="{{ salesman.id }}">{{ salesman.first_name }} {{ salesman.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="techLead" class="form-label">Technical Lead</label>
+                    <select class="form-select" id="techLead" name="techLead" required>
+                        <option value="">Select Technical Lead</option>
+                        {% for technicallead in technicalleads %}
+                            <option value="{{ technicallead.id }}">{{ technicallead.first_name }} {{ technicallead.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="text" class="form-control datepicker" id="start_date" name="start_date" required />
+                </div>
+                <div class="col-md-6">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="text" class="form-control datepicker" id="end_date" name="end_date" required />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="fileAttachment" class="form-label">File Attachment</label>
+                    <input type="file" class="form-control" id="fileAttachment" name="fileAttachment" />
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <button type="button" class="btn btn-custom" id="submit_project_btn">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Existing Projects Section -->
+    <div class="form-section" id="existingProjects" style="display:none;">
+        <h2>Existing Projects</h2>
+        <table id="projectsTable" class="display responsive" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Project Name</th>
+                    <th>Customer</th>
+                    <th>Work Site</th>
+                    <th>Salesman</th>
+                    <th>Technical Lead</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>{{ project.project_name }}</td>
+                    <td>{{ project.customer.company_name }}</td>
+                    <td>{{ project.site }}</td>
+                    <td>{{ project.salesman.first_name }} {{ project.salesman.last_name }}</td>
+                    <td>{{ project.technical_lead.first_name }} {{ project.technical_lead.last_name }}</td>
+                    <td>{{ project.start_date }}</td>
+                    <td>{{ project.end_date }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-orange btn-sm mx-1 update-project-btn" data-project-id="{{ project.id }}" title="Update" style="border-radius: 5px;"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-secondary btn-sm mx-1 archive-project-btn" data-project-id="{{ project.id }}" style="border-radius: 5px;" title="Archive"><i class="fas fa-archive"></i></button>
+                            <a href="{% url 'create_order_view' %}" class="btn btn-info btn-sm mx-1" style="border-radius: 5px;" title="New Order"><i class="fas fa-file-invoice"></i></a>
+                            <a href="{% url 'maintenance_call' %}" class="btn btn-danger btn-sm mx-1" style="border-radius: 5px;" title="Maintenance"><i class="fas fa-tools"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Load DataTables and Responsive CSS and JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<script>
+    // RTL settings for jQuery UI Datepicker
+    $.datepicker.regional['he'] = {
+        closeText: 'סגור',
+        prevText: '&#x3C;הקודם',
+        nextText: 'הבא&#x3E;',
+        currentText: 'היום',
+        monthNames: ['ינואר','פברואר','מרץ','אפריל','מאי','יוני',
+            'יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'],
+        monthNamesShort: ['ינו','פבר','מרץ','אפר','מאי','יוני',
+            'יולי','אוג','ספט','אוק','נוב','דצ'],
+        dayNames: ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'],
+        dayNamesShort: ['א','ב','ג','ד','ה','ו','ש'],
+        dayNamesMin: ['א','ב','ג','ד','ה','ו','ש'],
+        weekHeader: 'Wk',
+        dateFormat: 'yy-mm-dd',
+        firstDay: 0,
+        isRTL: true,
+        showMonthAfterYear: false,
+        yearSuffix: ''
+    };
+    $.datepicker.setDefaults($.datepicker.regional['he']);
+
+    // Handle project archiving
+    $(document).on('click', '.archive-project-btn', function() {
+        var projectId = $(this).data('project-id');
+
+        if (confirm("Are you sure you want to archive this project?")) {
+            $.ajax({
+                headers: { 'X-CSRFToken': "{{ csrf_token }}" },
+                url: "{% url 'ajax_update_status_project' %}",
+                type: 'POST',
+                data: { 'project_id': projectId },
+                success: function(response) {
+                    if (response.success) {
+                        $.toast({
+                            heading: 'Success',
+                            text: "Project archived successfully!",
+                            showHideTransition: 'slide',
+                            icon: 'success',
+                            position: 'top-right',
+                        });
+                        window.location.reload();
+                    } else {
+                        $.toast({
+                            heading: 'Error',
+                            text: "Failed to archive the project.",
+                            showHideTransition: 'slide',
+                            icon: 'error',
+                            position: 'top-right',
+                        });
+                    }
+                }
+            });
+        }
+    });
+
+    // Show new project form
+    $('#createProjectBtn').click(function() {
+        $('#projectFormSection').show();
+        $('#existingProjects').hide();
+        $('#formTitle').text('Create New Project');
+        $('#submit_project_btn').text('Submit Project');
+        $('#projectForm')[0].reset();  // Reset form
+        $('#project_id').val('');  // Clear project_id for creating a new project
+    });
+
+    // Show existing projects
+    $('#existingProjectsBtn').click(function() {
+        $('#existingProjects').show();
+        $('#projectFormSection').hide();
+    });
+
+    // Handle project update
+    $(document).on('click', '.update-project-btn', function() {
+        var projectId = $(this).data('project-id');
+
+        $.ajax({
+            headers: { 'X-CSRFToken': "{{ csrf_token }}" },
+            url: "{% url 'ajax_get_project' %}",
+            type: 'GET',
+            data: { 'project_id': projectId },
+            success: function(response) {
+                if (response.success) {
+                    $('#projectFormSection').show();
+                    $('#existingProjects').hide();
+                    $('#formTitle').text('Update Project');
+                    $('#submit_project_btn').text('Update Project');
+                    // Populate the form with the fetched project data
+                    $('#project_id').val(response.project.id);
+                    $('#projectName').val(response.project.project_name);
+                    $('#customer').val(response.project.customer_id);
+                    $('#workSite').val(response.project.site);
+                    $('#salesman').val(response.project.salesman_id);
+                    $('#techLead').val(response.project.technical_lead_id);
+                    $('#start_date').val(response.project.start_date);
+                    $('#end_date').val(response.project.end_date);
+                }
+            }
+        });
+    });
+
+    // Initialize jQuery UI datepicker
+    $(function() {
+        var dateFormat = 'yy-mm-dd';
+
+        $(".datepicker").datepicker({
+            dateFormat: dateFormat,
+            onSelect: function(selectedDate) {
+                if (this.id === 'start_date') {
+                    var endDatePicker = $('#end_date');
+                    var minDate = $(this).datepicker('getDate');
+                    endDatePicker.datepicker('option', 'minDate', minDate);
+                } else if (this.id === 'end_date') {
+                    var startDatePicker = $('#start_date');
+                    var maxDate = $(this).datepicker('getDate');
+                    startDatePicker.datepicker('option', 'maxDate', maxDate);
+                }
+            }
+        });
+    });
+
+    // Handle form submission (create or update)
+    $("#submit_project_btn").on('click', function(event) {
+        var form = $("#projectForm");
+        if (form[0].checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+            form.addClass('was-validated');
+            return;
+        }
+        var file_data = $('#fileAttachment').prop('files')[0];
+        var form_data = new FormData();
+        form_data.append('file', file_data);
+        form_data.append('project_name', $("#projectName").val());
+        form_data.append('customer', $("#customer").val());
+        form_data.append('site', $("#workSite").val());
+        form_data.append('salesman', $("#salesman").val());
+        form_data.append('techLead', $("#techLead").val());
+        form_data.append('start_date', $("#start_date").val());
+        form_data.append('end_date', $("#end_date").val());
+        form_data.append('project_id', $("#project_id").val());
+
+        var ajax_url = $("#project_id").val() ? "{% url 'ajax_update_project' %}" : "{% url 'ajax_create_project' %}";
+
+        $.ajax({
+            headers: { 'X-CSRFToken': "{{csrf_token}}" },
+            url: ajax_url,
+            type: 'POST',
+            data: form_data,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                if (data.success) {
+                    $.toast({
+                        heading: 'Success',
+                        text: "Project " + ($("#project_id").val() ? "updated" : "created") + " successfully!",
+                        showHideTransition: 'slide',
+                        icon: 'success',
+                        position: 'top-right',
+                    });
+                    window.location.reload();
+                } else {
+                    $.toast({
+                        heading: 'Error',
+                        text: data.error,
+                        showHideTransition: 'slide',
+                        icon: 'error',
+                        position: 'top-right',
+                    });
+                }
+            }
+        });
+    });
+
+    // Initialize DataTables with Hebrew language and Responsive support
+    $(document).ready(function() {
+        $('#projectsTable').DataTable({
+            responsive: true,
+            "paging": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "language": {
+                "sProcessing": "מעבד...",
+                "sLengthMenu": "הצג _MENU_ פריטים",
+                "sZeroRecords": "לא נמצאו רשומות מתאימות",
+                "sEmptyTable": "לא נמצאו נתונים בטבלה",
+                "sInfo": "מציג _START_ עד _END_ מתוך _TOTAL_ רשומות",
+                "sInfoEmpty": "מציג 0 עד 0 מתוך 0 רשומות",
+                "sInfoFiltered": "(מסונן מתוך _MAX_ רשומות)",
+                "sSearch": "חפש:",
+                "oPaginate": {
+                    "sFirst": "ראשון",
+                    "sLast": "אחרון",
+                    "sNext": "הבא",
+                    "sPrevious": "הקודם"
+                },
+                "sLoadingRecords": "טוען...",
+                "sProcessing": "מעבד...",
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": 7 }
+            ]
+        });
+    });
+</script>
+{% endblock %}

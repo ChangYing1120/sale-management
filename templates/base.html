@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול מכירות</title>
+    <link rel="shorcut icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">  
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'toast/toast.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    {% block css %} {% endblock css %}
+</head>
+<body>
+    <div class="container">
+        <!-- Right Sidebar -->
+        <div class="right-sidebar">
+            <a href="/">
+                <img src="{% static 'img/logo.png' %}" alt="לוגו">
+            </a>
+            <a href="{% url 'create_order_view' %}" class="sidebar-button">יצירת הזמנה</a>
+            <a href="{% url 'maintenance_call' %}" class="sidebar-button">פתיחת קריאת שירות</a>
+            <a href="{% url 'weekly_procurement_orders' %}" class="sidebar-button">יצירת פקודת רכש שבועית</a>
+            <a href="{% url 'report_view' %}" class="sidebar-button">דו"ח</a>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- תוכן ראשי כאן -->
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'toast/toast.min.js' %}"></script>
+    <!-- Load jQuery UI for the datepicker -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="{% static 'js/validations.js' %}"></script>
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>

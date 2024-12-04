@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block page-title %}Reports{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="main-screen">
+        <!-- Page Title -->
+        <div class="main-title text-center">
+            <h2>Reports</h2>
+        </div>
+
+        <!-- Reports Export Section -->
+        <div class="row mt-5">
+            <!-- Orders Report -->
+            <div class="col-md-4">
+                <div class="card shadow p-4 mb-4">
+                    <h5 class="card-title">Orders Report</h5>
+                    <p class="card-text">
+                        This report contains detailed information about customer orders, including:
+                        <ul>
+                            <li>Order ID</li>
+                            <li>Customer Name</li>
+                            <li>Product Details</li>
+                            <li>Quantity</li>
+                            <li>Total Price</li>
+                            <li>Order Date</li>
+                        </ul>
+                    </p>
+                    <button id="export-orders-report" class="btn btn-primary w-100">Export Orders Report</button>
+                </div>
+            </div>
+
+            <!-- Maintenance Calls Report -->
+            <div class="col-md-4">
+                <div class="card shadow p-4 mb-4">
+                    <h5 class="card-title">Maintenance Calls Report</h5>
+                    <p class="card-text">
+                        This report contains information on maintenance calls, including:
+                        <ul>
+                            <li>Call ID</li>
+                            <li>Project Name</li>
+                            <li>Problem Description</li>
+                            <li>Problem Category</li>
+                            <li>Status (Pending, In Progress, Done)</li>
+                            <li>Assigned Technical Lead</li>
+                            <li>Date of Call</li>
+                        </ul>
+                    </p>
+                    <button id="export-maintenance-calls-report" class="btn btn-primary w-100">Export Maintenance Calls Report</button>
+                </div>
+            </div>
+
+            <!-- Procurement Orders Report -->
+            <div class="col-md-4">
+                <div class="card shadow p-4 mb-4">
+                    <h5 class="card-title">Procurement Orders Report</h5>
+                    <p class="card-text">
+                        This report covers procurement order details, including:
+                        <ul>
+                            <li>Order ID</li>
+                            <li>Product Name</li>
+                            <li>Supplier Name</li>
+                            <li>Quantity</li>
+                            <li>Ordered Date</li>
+                            <li>Status (Ordered, Pending)</li>
+                        </ul>
+                    </p>
+                    <button id="export-procurement-orders-report" class="btn btn-primary w-100">Export Procurement Orders Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Export Orders Report
+        $('#export-orders-report').click(function() {
+            exportReport('orders');
+        });
+
+        // Export Maintenance Calls Report
+        $('#export-maintenance-calls-report').click(function() {
+            exportReport('maintenance_calls');
+        });
+
+        // Export Procurement Orders Report
+        $('#export-procurement-orders-report').click(function() {
+            exportReport('procurement_orders');
+        });
+
+        // AJAX function to handle exporting reports
+        function exportReport(reportType) {
+            $.ajax({
+                url: "{% url 'export_report' %}",
+                type: "GET",
+                data: {
+                    'report_type': reportType
+                },
+                xhrFields: {
+                    responseType: 'blob'  // This is necessary to handle the binary data
+                },
+                success: function(response, status, xhr) {
+                    var filename = "";
+                    var disposition = xhr.getResponseHeader('Content-Disposition');
+                    if (disposition && disposition.indexOf('attachment') !== -1) {
+                        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                        var matches = filenameRegex.exec(disposition);
+                        if (matches != null && matches[1]) {
+                            filename = matches[1].replace(/['"]/g, '');
+                        }
+                    }
+                    var blob = new Blob([response], { type: xhr.getResponseHeader('Content-Type') });
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                error: function() {
+                    alert('Failed to export the report.');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

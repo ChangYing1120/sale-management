@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block page-title %}Weekly Procurement Orders{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="main-screen">
+        <!-- Page Title -->
+        <div class="main-title">
+            <h2>יצירת פקודת רכש שבועית</h2>
+        </div>
+
+        <!-- Select Week -->
+        <div class="mb-3">
+            <label for="select-week" class="form-label">Select Week:</label>
+            <!-- The input will display the current week and be controlled by jQuery UI Datepicker -->
+            <input type="text" id="select-week" class="form-control datepicker">
+        </div>
+
+        <!-- Orders Table -->
+        <div class="card p-4 shadow">
+            <table id="ordersTable" class="table table-striped table-responsive">
+                <thead>
+                    <tr>
+                        <th>מוצר</th>
+                        <th>כמויות</th>
+                        <th>ספק</th>
+                        <th>בוצע?</th>
+                    </tr>
+                </thead>
+                <tbody id="order-list">
+                    <!-- Dynamic rows will be inserted here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Export Options -->
+        <div class="text-end mt-4">
+            <button id="export-excel" class="btn btn-primary">Export to Excel</button>
+            <button id="export-csv" class="btn btn-secondary">Export to CSV</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize the DataTable
+        var table = $('#ordersTable').DataTable({
+            responsive: true,  // Enable responsive support
+            "paging": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "language": {
+                "sProcessing": "מעבד...",
+                "sLengthMenu": "הצג _MENU_ פריטים",
+                "sZeroRecords": "לא נמצאו רשומות מתאימות",
+                "sEmptyTable": "לא נמצאו נתונים בטבלה",
+                "sInfo": "מציג _START_ עד _END_ מתוך _TOTAL_ רשומות",
+                "sInfoEmpty": "מציג 0 עד 0 מתוך 0 רשומות",
+                "sInfoFiltered": "(מסונן מתוך _MAX_ רשומות)",
+                "sSearch": "חפש:",
+                "oPaginate": {
+                    "sFirst": "ראשון",
+                    "sLast": "אחרון",
+                    "sNext": "הבא",
+                    "sPrevious": "הקודם"
+                },
+                "sLoadingRecords": "טוען...",
+                "sProcessing": "מעבד...",
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": 3 }  // Disable ordering for the checkbox column
+            ]
+        });
+
+        // Helper function to get the week number
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            var dayNum = d.getUTCDay() || 7;  // Make sure that Sunday is day 7, not day 0
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // Function to format the date into YYYY-WW format
+        function formatWeek(week, year) {
+            return year + '-W' + (week < 10 ? '0' + week : week);
+        }
+
+        // Helper function to get the current date in Israel time
+        function getCurrentIsraelDate() {
+            var israelTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Jerusalem"});
+            return new Date(israelTime);
+        }
+
+        // Function to get procurement orders for the selected week
+        function getProcurementOrders(week) {
+            $.ajax({
+                headers: { 'X-CSRFToken': "{{ csrf_token }}" },
+                url: "{% url 'ajax_weekly_procurement_orders' %}",
+                type: 'GET',
+                data: { week: week },
+                success: function (data) {
+                    table.clear().draw();
+        
+                    if (data.success && data.orders.length > 0) {
+                        data.orders.forEach(function(order) {
+                            var checked = order.ordered ? 'checked' : '';
+        
+                            table.row.add([
+                                order.product_name,
+                                order.quantity,
+                                order.supplier_name,
+                                `<input type="checkbox" class="order-status-checkbox" data-order-id="${order.id}" ${checked}>`
+                            ]).draw(false);
+                        });
+                    }
+                    $('#select-week').val(data.current_week);
+                },
+                error: function() {
+                    alert('Failed to retrieve procurement orders.');
+                }
+            });
+        }
+
+        // Function to set the current week in the input field based on Israel time
+        function setCurrentWeek() {
+            const now = getCurrentIsraelDate();
+            const week = getWeekNumber(now);
+            const year = now.getFullYear();
+            $('#select-week').val(formatWeek(week, year));
+
+            // Fetch orders for the current week
+            getProcurementOrders(formatWeek(week, year));
+        }
+
+        // RTL settings for jQuery UI Datepicker in Hebrew
+        $.datepicker.regional['he'] = {
+            closeText: 'סגור',
+            prevText: '&#x3C;הקודם',
+            nextText: 'הבא&#x3E;',
+            currentText: 'היום',
+            monthNames: ['ינואר','פברואר','מרץ','אפריל','מאי','יוני',
+            'יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'],
+            monthNamesShort: ['ינו','פבר','מרץ','אפר','מאי','יוני',
+            'יולי','אוג','ספט','אוק','נוב','דצ'],
+            dayNames: ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'],
+            dayNamesShort: ['א','ב','ג','ד','ה','ו','ש'],
+            dayNamesMin: ['א','ב','ג','ד','ה','ו','ש'],
+            weekHeader: 'Wk',
+            dateFormat: 'yy-mm-dd',
+            firstDay: 0,
+            isRTL: true,
+            showMonthAfterYear: false,
+            yearSuffix: ''
+        };
+
+        // Set Hebrew as the default locale
+        $.datepicker.setDefaults($.datepicker.regional['he']);
+
+        // Initialize the datepicker for week selection
+        $('#select-week').datepicker({
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            showWeek: true,
+            firstDay: 0,
+            onClose: function(dateText, inst) {
+                var selectedDate = new Date(inst.selectedYear, inst.selectedMonth, inst.selectedDay);
+                var week = getWeekNumber(selectedDate);
+                var year = selectedDate.getFullYear();
+                var formattedWeek = formatWeek(week, year);
+
+                // Update the input with the week in yyyy-WW format
+                $('#select-week').val(formattedWeek);
+                
+                // Fetch the orders for the selected week
+                getProcurementOrders(formattedWeek);
+            }
+        });
+
+        // Set default to the current week (in Israel time) when the page loads
+        setCurrentWeek();
+
+        // Handle order status change
+        $(document).on('change', '.order-status-checkbox', function() {
+            var orderId = $(this).data('order-id');
+            var ordered = $(this).is(':checked');
+
+            $.ajax({
+                url: "{% url 'update_order_status' %}",
+                type: "POST",
+                data: {
+                    'order_id': orderId,
+                    'ordered': ordered,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (!response.success) {
+                        alert('Failed to update order status.');
+                    }
+                }
+            });
+        });
+
+        // Handle Export to Excel
+        $('#export-excel').click(function() {
+            exportOrders('excel');
+        });
+
+        // Handle Export to CSV
+        $('#export-csv').click(function() {
+            exportOrders('csv');
+        });
+
+        // AJAX function to export orders to Excel or CSV
+        function exportOrders(format) {
+            var week = $('#select-week').val();
+
+            $.ajax({
+                url: "{% url 'export_orders' %}",
+                type: "GET",
+                data: {
+                    'week': week,
+                    'format': format
+                },
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function(response, status, xhr) {
+                    var filename = "";
+                    var disposition = xhr.getResponseHeader('Content-Disposition');
+                    if (disposition && disposition.indexOf('attachment') !== -1) {
+                        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                        var matches = filenameRegex.exec(disposition);
+                        if (matches != null && matches[1]) {
+                            filename = matches[1].replace(/['"]/g, '');
+                        }
+                    }
+                    var blob = new Blob([response], { type: xhr.getResponseHeader('Content-Type') });
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                error: function() {
+                    alert('Failed to export orders.');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
